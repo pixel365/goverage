@@ -17,6 +17,7 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
+    implementation("org.jetbrains:marketplace-zip-signer:0.1.8")
     intellijPlatform {
         goland("2025.1")
         bundledPlugin("org.jetbrains.plugins.go")
@@ -43,5 +44,19 @@ tasks {
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions.jvmTarget = "21"
+    }
+
+    signPlugin {
+        certificateChain.set(
+            providers.environmentVariable("GOVERAGE_CERT").map { file(it).readText() }
+        )
+        privateKey.set(
+            providers.environmentVariable("GOVERAGE_PRIVATE_KEY").map { file(it).readText() }
+        )
+        password.set(providers.environmentVariable("GOVERAGE_PASSWORD"))
+    }
+
+    publishPlugin {
+        token.set(providers.environmentVariable("GOVERAGE_TOKEN"))
     }
 }
