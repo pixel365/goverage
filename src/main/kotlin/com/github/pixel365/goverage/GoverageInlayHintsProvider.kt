@@ -25,6 +25,42 @@ class GoverageInlayHintsProvider : InlayHintsProvider<NoSettings> {
             override fun collect(element: PsiElement, editor: Editor, sink: InlayHintsSink): Boolean {
                 val factory = factory
 
+                if (element is GoFunctionOrMethodDeclaration) {
+                    val file = element.containingFile?.virtualFile ?: return true
+                    val baseDir = editor.project?.baseDir ?: return true
+                    val relPath = VfsUtilCore.getRelativePath(file, baseDir) ?: return true
+
+                    val coverageEntries = CoverageCache.getCoverageEntriesForFile(editor.project!!, relPath)
+                    if (coverageEntries.isNullOrEmpty()) return true
+
+                    val startLine = element.textRange.startOffset.let { editor.document.getLineNumber(it) + 1 }
+                    val endLine = element.textRange.endOffset.let { editor.document.getLineNumber(it) + 1 }
+
+                    var covered = 0
+                    var total = 0
+
+                    for (entry in coverageEntries) {
+                        if (entry.startLine in startLine..endLine || entry.endLine in startLine..endLine) {
+                            total += entry.statements
+                            if (entry.count > 0) {
+                                covered += entry.statements
+                            }
+                        }
+                    }
+
+                    if (total > 0) {
+                        val percent = (covered.toDouble() * 100 / total).let { Math.round(it * 100) / 100.0 }
+                        val text = "Function Coverage: $percent%"
+                        sink.addBlockElement(
+                            element.textOffset,
+                            relatesToPrecedingText = false,
+                            showAbove = true,
+                            priority = 0,
+                            presentation = factory.smallText(text)
+                        )
+                    }
+                }
+
                 if (element is GoFile) {
                     val pkg = element.getPackage()
                     val vfile = element.virtualFile
@@ -38,7 +74,7 @@ class GoverageInlayHintsProvider : InlayHintsProvider<NoSettings> {
                             sink.addBlockElement(
                                 pkg.textOffset,
                                 relatesToPrecedingText = false,
-                                showAbove = true,
+                                showAbove = false,
                                 priority = 0,
                                 presentation = factory.smallText(text)
                             )
