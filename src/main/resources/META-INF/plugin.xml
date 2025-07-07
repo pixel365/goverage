@@ -16,4 +16,10 @@
             implementationClass="com.pixel365.goverage.GoverageInlayHintsProvider"
             language="go"/>
   </extensions>
+
+  <idea-version since-build="251" until-build="999.*"/>
+  <change-notes><![CDATA[
+    - File-level coverage hints
+    - Function-level coverage hints above each Go function
+  ]]></change-notes>
 </idea-plugin>

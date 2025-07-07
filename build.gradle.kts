@@ -32,10 +32,6 @@ intellijPlatform {
         ideaVersion {
             sinceBuild = "251"
         }
-
-        changeNotes = """
-      Initial version
-    """.trimIndent()
     }
 }
 
