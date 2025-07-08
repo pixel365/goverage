@@ -16,6 +16,19 @@ It supports **GoLand**, **IntelliJ IDEA Ultimate**, and any JetBrains IDE with t
 
 ## 📦 Installation
 
+### ✅ From JetBrains Marketplace
+
+👉 [Install via JetBrains Marketplace](https://plugins.jetbrains.com/plugin/27851-goverage)
+
+1. Open your JetBrains IDE (e.g. GoLand or IntelliJ IDEA).
+2. Go to **Settings → Plugins → Marketplace**.
+3. Search for **Goverage**, then click **Install**.
+4. Restart the IDE if prompted.
+
+---
+
+### 🛠 Manual Installation
+
 1. Clone the repository and build the plugin:
 
     ```bash
