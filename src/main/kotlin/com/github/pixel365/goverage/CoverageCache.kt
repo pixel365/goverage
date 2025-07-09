@@ -2,6 +2,7 @@ package com.pixel365.goverage
 
 import com.intellij.openapi.project.Project
 import java.io.File
+import kotlin.math.roundToInt
 
 data class CoverageEntry(
     val startLine: Int,
@@ -10,51 +11,59 @@ data class CoverageEntry(
     val count: Int
 )
 
+data class Paths(
+    val base: String,
+    val rel: String,
+)
+
 object CoverageCache {
     private var lastModified: Long = 0
     private var coverageMap: Map<String, Pair<Int, Int>> = emptyMap()
     private var detailedMap: Map<String, List<CoverageEntry>> = emptyMap()
 
     fun getCoverageForFile(project: Project, absPath: String): Double? {
-        val basePath = project.basePath ?: return null
-        val relPath = absPath.removePrefix(basePath).removePrefix("/")
+        val paths = getPaths(project, absPath) ?: return null
 
-        val goModFile = File(basePath, "go.mod")
+        val goModFile = File(paths.base, "go.mod")
         if (!goModFile.exists()) return null
 
-        val moduleName = readModuleName(basePath) ?: return null
+        val moduleName = readModuleName(paths.base) ?: return null
+        if (!updateCoverageMap(paths.base)) return null
 
-        val coverageFile = File(basePath, "coverage.out")
-        if (!coverageFile.exists()) return null
-
-        if (coverageFile.lastModified() > lastModified) {
-            coverageMap = parseCoverageFile(coverageFile)
-            lastModified = coverageFile.lastModified()
-        }
-
-        val coverageKey = "$moduleName/$relPath"
-        val (covered, total) = coverageMap[coverageKey] ?: return null
+        val key = "$moduleName/${paths.rel}"
+        val (covered, total) = coverageMap[key] ?: return null
 
         return if (total > 0)
-            (covered.toDouble() * 100 / total).let { Math.round(it * 100) / 100.0 }
+            (covered.toDouble() * 100 / total).let { (it * 100).roundToInt() / 100.0 }
         else null
     }
 
     fun getCoverageEntriesForFile(project: Project, absPath: String): List<CoverageEntry>? {
-        val basePath = project.basePath ?: return null
-        val relPath = absPath.removePrefix(basePath).removePrefix("/")
+        val paths = getPaths(project, absPath) ?: return null
+        val moduleName = readModuleName(paths.base) ?: return null
+        if (!updateCoverageMap(paths.base)) return null
 
-        val moduleName = readModuleName(basePath) ?: return null
+        val key = "$moduleName/${paths.rel}"
+        return detailedMap[key]
+    }
+
+    private fun updateCoverageMap(basePath: String): Boolean {
         val coverageFile = File(basePath, "coverage.out")
-        if (!coverageFile.exists()) return null
+        if (!coverageFile.exists()) return false
 
         if (coverageFile.lastModified() > lastModified) {
             coverageMap = parseCoverageFile(coverageFile)
             lastModified = coverageFile.lastModified()
         }
 
-        val key = "$moduleName/$relPath"
-        return detailedMap[key]
+        return true
+    }
+
+    private fun getPaths(project: Project, absPath: String): Paths? {
+        val basePath = project.basePath ?: return null
+        val relPath = absPath.removePrefix(basePath).removePrefix("/")
+
+        return Paths(basePath, relPath)
     }
 
     private fun readModuleName(basePath: String): String? {
