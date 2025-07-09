@@ -49,7 +49,7 @@ object CoverageCache {
         if (!coverageFile.exists()) return null
 
         if (coverageFile.lastModified() > lastModified) {
-            parseCoverageFile(coverageFile)
+            coverageMap = parseCoverageFile(coverageFile)
             lastModified = coverageFile.lastModified()
         }
 
