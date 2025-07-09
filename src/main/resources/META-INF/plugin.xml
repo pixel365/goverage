@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>com.github.pixel365.goverage</id>
   <name>Goverage</name>
-  <vendor url="https://github.com/pisel365">pixel365</vendor>
+  <vendor url="https://github.com/pixel365">pixel365</vendor>
 
   <description><![CDATA[
     Goverage is a JetBrains plugin for GoLand that shows inline test coverage percentages for each function,
