@@ -40,7 +40,8 @@ class GoverageInlayHintsProvider : InlayHintsProvider<NoSettings> {
                     var total = 0
 
                     for (entry in coverageEntries) {
-                        if (entry.startLine in startLine..endLine || entry.endLine in startLine..endLine) {
+                        // Count entries that intersect with the function range
+                        if (entry.startLine <= endLine && entry.endLine >= startLine) {
                             total += entry.statements
                             if (entry.count > 0) {
                                 covered += entry.statements
